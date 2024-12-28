@@ -1,16 +1,22 @@
 <template>
-  <GameField />
+  <div>
+    <GameField />
+    <BuildingControls />
+  </div>
 </template>
 
-<script>
-import GameField from './components/GameField.vue'
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import GameField from '@/components/GameField.vue';
+import BuildingControls from "@/components/BuildingControls.vue";
 
-export default {
-  name: 'App',
+@Options({
   components: {
-    GameField
-  }
-}
+    BuildingControls,
+    GameField,
+  },
+})
+export default class App extends Vue {}
 </script>
 
 <style>

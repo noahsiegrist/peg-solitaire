@@ -1,40 +1,29 @@
 <template>
-  <div class="game-field">
-
+  <div
+      class="game-field"
+      :style="`grid-template-columns: repeat(${gameStore.size}, 1fr);`">
+    <GameCell
+        v-for="(cell, index) in gameStore.field"
+        :key="index"
+        :cellId="index" />
   </div>
 </template>
 
-<script>
+<script setup>
 
 import { useGameStore } from '@/stores/gameStore';
+import GameCell from "@/components/GameCell.vue";
 
-export default {
-  name: 'GameField',
-
-  setup() {
-    const gameStore = useGameStore();
-    return { gameStore };
-  },
-  data() {
-    return {
-      gameMode: GameMode.Building,
-      field: [
-        [null, null, null],
-        [null, null, null],
-        [null, null, null],
-      ],
-    }
-  }
-}
+const gameStore = useGameStore();
 </script>
 
 <style scoped>
 
 .game-field {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 10px;
-  width: 300px;
+  grid-gap: 5px;
+  width: 90vh;
+  height: 90vh;
   margin: 0 auto;
 }
 
