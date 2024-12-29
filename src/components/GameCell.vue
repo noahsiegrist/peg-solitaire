@@ -67,11 +67,18 @@ const handleClick = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #000;
+  border-radius: 100%;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Adds a nice shadow */
+  transition: box-shadow 0.3s ease; /* Smooth shadow transition */
+}
+
+.cell:hover {
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.15), 0 3px 5px rgba(0, 0, 0, 0.12); /* Darker shadow on hover */
 }
 
 .cell-not-playable {
-  border: 0;
+
 }
 
 .cell-occupied {
@@ -85,9 +92,21 @@ const handleClick = () => {
 .cell-focused {
   background-color: #cfc;
 }
+.cell-occupied:hover {
+  background-color: #e5ffe5;
+}
+
 
 .cell-move-allowed {
-  background-color: #0505b3;
+  background-color: #bebeff;
+}
+
+.cell-move-allowed:hover {
+  background-color: #9292ff;
+}
+
+.cell-empty {
+  background-color: #f6f6f6;
 }
 
 </style>

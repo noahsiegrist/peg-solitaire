@@ -23,6 +23,7 @@ export const useGameStore = defineStore('game', {
 
         toggleGameMode() {
             this.mode = this.mode === Mode.Building ? Mode.Playing : Mode.Building;
+            this.resetGame();
         },
         toggleBuildingCell(index: number) {
             assert(this.mode === Mode.Building, 'Cannot toggle building cell in playing mode');
