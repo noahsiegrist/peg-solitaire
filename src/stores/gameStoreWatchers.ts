@@ -7,19 +7,26 @@ export function setupGameStoreWatchers() {
 
     watch(
         () => gameStore.size,
-        (newSize) => {
+        (size) => {
             if (gameStore.mode === Mode.Building) {
-                const halfSize = Math.floor(newSize / 2);
-                const newField = Array(newSize * newSize).fill(0);
-
-                for (let row = 0; row < newSize; row++) {
-                    newField[row * newSize + halfSize] = 1;
-                    newField[halfSize * newSize + row] = 1;
-                }
-
+                const newField = Array(size * size).fill(0).map(() => ({ isPlayable: true, isOccupied: true }));
+                const halfSize = Math.floor(size / 2);
+                // const quarterSize = Math.floor(size / 4);
+                //
+                //
+                // for (let i = 0; i < size; i++) {
+                //     for(let j = quarterSize; j < size-quarterSize; j++) {
+                //         newField[i * size + halfSize] = 1;
+                //         newField[halfSize * size + i] = 1;
+                //     }
+                //
+                // }
+                newField[halfSize * size + halfSize] = { isPlayable: true, isOccupied: false };
                 gameStore.field = newField;
             }
         },
-    { immediate: true }
+    {
+        immediate: true,
+    }
     );
 }

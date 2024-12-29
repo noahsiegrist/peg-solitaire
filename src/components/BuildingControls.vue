@@ -9,6 +9,7 @@ const gameStore = useGameStore();
 <template>
   <div class="building-controls">
     <button @click="gameStore.toggleGameMode">{{gameStore.mode}}</button>
+    <button @click="gameStore.resetGame">Reset Game</button>
 
     <div class="controlls" v-if="gameStore.mode === Mode.Building">
       <input type="range" min="1" max="20" class="slider" id="sizeSlider" v-model="gameStore.size">
