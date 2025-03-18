@@ -1,4 +1,6 @@
 # peg-solitaire
+Its hosted by netlify, enjoy.
+https://peg-solitair.netlify.app/
 
 ## Project setup
 ```
