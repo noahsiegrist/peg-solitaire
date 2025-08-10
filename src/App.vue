@@ -21,7 +21,7 @@ export default class App extends Vue {}
 
 <style>
 .app-container {
-  min-height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,4 +35,6 @@ export default class App extends Vue {}
   color: #2c3e50;
   margin-top: 0;
 }
+
+html, body { height: 100%; margin: 0; }
 </style>
