@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-container">
     <GameField />
     <BuildingControls />
   </div>
@@ -20,12 +20,19 @@ export default class App extends Vue {}
 </script>
 
 <style>
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0;
 }
 </style>

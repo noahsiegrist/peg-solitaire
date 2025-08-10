@@ -21,9 +21,11 @@ const gameStore = useGameStore();
 
 .game-field {
   display: grid;
-  grid-gap: 3vh;
-  width: 90vh;
-  height: 90vh;
+  gap: clamp(2px, 1.2vmin, 12px);
+  width: min(92vmin, 92vw);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  max-width: 100vw;
   margin: 0 auto;
 }
 
