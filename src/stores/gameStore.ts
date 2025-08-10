@@ -22,6 +22,8 @@ export const useGameStore = defineStore('game', {
         isSolving: false,
         visitedStates: 0,
         _shouldStopSolving: false as boolean,
+        solutionMoves: null as SolverMove[] | null,
+        preSolveFieldSnapshot: null as CellState[] | null,
     }),
     actions: {
 
@@ -66,6 +68,8 @@ export const useGameStore = defineStore('game', {
             this.isSolving = true;
             this.visitedStates = 0;
             this._shouldStopSolving = false;
+            this.solutionMoves = null;
+            this.preSolveFieldSnapshot = this.field.map(c => ({ isPlayable: c.isPlayable, isOccupied: c.isOccupied }));
             try {
                 const isFast = speed === 'fast';
                 const SAMPLE_STRIDE = 1000;
@@ -98,25 +102,46 @@ export const useGameStore = defineStore('game', {
                             }
                         }
                     },
-                    recordSolutionPath: isFast,
+                    recordSolutionPath: true,
                 });
-                if (isFast && result.solved && result.path) {
-                    for (const move of result.path) {
-                        if (this._shouldStopSolving) break;
-                        this.field[move.from].isOccupied = false;
-                        this.field[move.mid].isOccupied = false;
-                        this.field[move.to].isOccupied = true;
-                    }
+                if (result.solved && result.path) {
+                    this.solutionMoves = result.path;
                 }
             } finally {
                 this.isSolving = false;
                 this.focusedCellIndex = -1;
                 this.hoveredCellIndex = -1;
+                if (this.preSolveFieldSnapshot) {
+                    this.field = this.preSolveFieldSnapshot.map(c => ({ isPlayable: c.isPlayable, isOccupied: c.isOccupied }));
+                }
             }
         },
 
         stopAutoSolve() {
             this._shouldStopSolving = true;
+        },
+
+        previewSolutionMove(index: number) {
+            if (!this.preSolveFieldSnapshot || !this.solutionMoves || index < 0) return;
+            const lastIndex = Math.min(index, this.solutionMoves.length - 1);
+            const cloned = this.preSolveFieldSnapshot.map(c => ({ isPlayable: c.isPlayable, isOccupied: c.isOccupied }));
+            for (let i = 0; i <= lastIndex; i++) {
+                const m = this.solutionMoves[i];
+                if (cloned[m.from].isPlayable && cloned[m.mid].isPlayable && cloned[m.to].isPlayable) {
+                    cloned[m.from].isOccupied = false;
+                    cloned[m.mid].isOccupied = false;
+                    cloned[m.to].isOccupied = true;
+                }
+            }
+            this.field = cloned;
+            const current = this.solutionMoves[lastIndex];
+            this.focusedCellIndex = current.from;
+        },
+
+        clearSolutionPreview() {
+            if (!this.preSolveFieldSnapshot) return;
+            this.field = this.preSolveFieldSnapshot.map(c => ({ isPlayable: c.isPlayable, isOccupied: c.isOccupied }));
+            this.focusedCellIndex = -1;
         },
 
         isMoveAllowedFrom(sourceIndex: number, targetIndex: number): boolean {

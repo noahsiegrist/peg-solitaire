@@ -81,23 +81,42 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
     </div>
 
     <div class="section" v-show="!isCollapsed">
-      <div class="row">
-        <div class="label">Auto-solver (DFS)</div>
-        <div class="solver-controls">
-          <button class="btn btn-secondary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('slow')">
-            <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
-            Start Slow
-          </button>
-          <button class="btn btn-primary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('fast')">
-            <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
-            Start Fast
-          </button>
-          <button class="btn btn-ghost" :disabled="!gameStore.isSolving" @click="gameStore.stopAutoSolve()">Stop</button>
+      <div class="solver-card">
+        <div class="row between">
+          <div class="label">Auto-solver (DFS)</div>
+          <div class="solver-controls segment">
+            <button class="btn btn-secondary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('slow')">
+              <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
+              Slow
+            </button>
+            <button class="btn btn-primary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('fast')">
+              <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
+              Fast
+            </button>
+            <button class="btn btn-ghost" :disabled="!gameStore.isSolving" @click="gameStore.stopAutoSolve()">Stop</button>
+          </div>
         </div>
-      </div>
-      <div class="row" v-if="gameStore.isSolving">
-        <span class="muted">Visited states:</span>
-        <strong>{{ gameStore.visitedStates }}</strong>
+        <div class="row solving-row" v-if="gameStore.isSolving">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="muted">Solving…</span>
+          <span class="muted">Visited:</span>
+          <strong>{{ gameStore.visitedStates }}</strong>
+        </div>
+        <div class="solutions" v-if="!gameStore.isSolving && gameStore.solutionMoves && gameStore.solutionMoves.length">
+          <details open class="solution-accordion">
+            <summary class="solution-summary">Solution ({{ gameStore.solutionMoves.length }} moves)</summary>
+            <div class="solutions-body">
+              <ol class="solution-list">
+                <li v-for="(m, i) in gameStore.solutionMoves" :key="i" class="solution-item"
+                    @mouseenter="gameStore.previewSolutionMove(i)"
+                    @mouseleave="gameStore.clearSolutionPreview()">
+                  <span class="step-index">{{ i + 1 }}</span>
+                  <span class="step-desc">from <strong>{{ m.from }}</strong> <span class="arrow">→</span> over <strong>{{ m.mid }}</strong> <span class="arrow">→</span> to <strong>{{ m.to }}</strong></span>
+                </li>
+              </ol>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   </div>
@@ -149,6 +168,7 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
 .section { margin-top: 16px; }
 .section + .section { margin-top: 20px; }
 .row { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; row-gap: 10px; }
+.row.between { justify-content: space-between; }
 
 .btn { cursor: pointer; border: 1px solid transparent; border-radius: 8px; padding: 8px 12px; font-weight: 600; transition: all .2s ease; }
 .btn:active { transform: translateY(1px); }
@@ -207,6 +227,22 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
 .stats { display: flex; gap: 14px; margin-top: 6px; flex-wrap: wrap; row-gap: 8px; }
 .stat { display: flex; gap: 6px; align-items: baseline; padding: 6px 10px; border: 1px solid var(--panel-border); border-radius: 8px; }
 .muted { color: var(--muted); font-size: 12px; }
+
+.solutions { margin-top: 8px; max-height: 40vh; overflow: auto; border: 1px solid var(--panel-border); border-radius: 10px; }
+.solution-accordion { padding: 6px 10px; }
+.solution-summary { cursor: pointer; user-select: none; font-weight: 600; }
+.solutions-body { margin-top: 6px; }
+.solution-list { margin: 0; padding: 0; display: grid; }
+.solution-list li { list-style: none; }
+.solution-item { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--panel-border); }
+.solution-item:first-child { border-top: none; }
+.solution-item:hover { background: rgba(111, 207, 151, 0.14); }
+.step-index { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: #2d2f3a; font-weight: 700; font-size: 12px; }
+.step-desc .arrow { opacity: 0.7; padding: 0 4px; }
+
+.solver-card { border: 1px solid var(--panel-border); border-radius: 12px; padding: 10px; background: rgba(0,0,0,0.06); }
+.segment { display: inline-flex; gap: 8px; }
+.solving-row { gap: 8px; }
 
 .building-controls.collapsed {
   padding: 10px 12px;
