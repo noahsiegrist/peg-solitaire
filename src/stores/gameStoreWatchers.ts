@@ -7,23 +7,20 @@ export function setupGameStoreWatchers() {
 
     watch(
         () => gameStore.size,
-        (size) => {
-            if (gameStore.mode === Mode.Building) {
-                const newField = Array(size * size).fill(0).map(() => ({ isPlayable: true, isOccupied: true }));
-                const halfSize = Math.floor(size / 2);
-                // const quarterSize = Math.floor(size / 4);
-                //
-                //
-                // for (let i = 0; i < size; i++) {
-                //     for(let j = quarterSize; j < size-quarterSize; j++) {
-                //         newField[i * size + halfSize] = 1;
-                //         newField[halfSize * size + i] = 1;
-                //     }
-                //
-                // }
-                newField[halfSize * size + halfSize] = { isPlayable: true, isOccupied: false };
-                gameStore.field = newField;
+        (newSize) => {
+            if (gameStore.mode !== Mode.Building) return;
+            const size = Number(newSize);
+            const newField = Array.from({ length: size * size }, () => ({ isPlayable: true, isOccupied: true }));
+            const mid = Math.floor(size / 2);
+            newField[mid * size + mid] = { isPlayable: true, isOccupied: false };
+
+            const setOff = (r: number, c: number) => { newField[r * size + c] = { isPlayable: false, isOccupied: false }; };
+            if (size >= 7) {
+                [[0, 0], [0, size - 2], [size - 2, 0], [size - 2, size - 2]].forEach(([r, c]) => [0, 1].forEach(dr => [0, 1].forEach(dc => setOff(r + dr, c + dc))));
+            } else if (size >= 2) {
+                [0, size - 1, size * (size - 1), size * size - 1].forEach(i => { newField[i] = { isPlayable: false, isOccupied: false }; });
             }
+            gameStore.field = newField;
         },
     {
         immediate: true,

@@ -12,7 +12,7 @@ const gameStore = useGameStore();
     <button @click="gameStore.resetGame">Reset Game</button>
 
     <div class="controlls" v-if="gameStore.mode === Mode.Building">
-      <input type="range" min="1" max="20" class="slider" id="sizeSlider" v-model="gameStore.size">
+      <input type="range" min="1" max="20" class="slider" id="sizeSlider" v-model.number="gameStore.size">
     </div>
   </div>
 </template>
