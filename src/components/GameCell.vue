@@ -6,11 +6,7 @@ import {Mode} from "@/types/Mode";
 
 const gameStore = useGameStore();
 
-const prop = defineProps({
-  cellId: {
-    type: Number,
-  },
-});
+const props = defineProps<{ cellId: number }>();
 
 
 /* eslint-disable no-unused-vars */
@@ -28,30 +24,30 @@ enum CellMode {
 
 const cellMode = computed<CellMode>(() => {
   if (gameStore.mode === Mode.Building) {
-    return gameStore.field[prop.cellId].isPlayable ? CellMode.Playable : CellMode.NotPlayable
+    return gameStore.field[props.cellId].isPlayable ? CellMode.Playable : CellMode.NotPlayable
   } else if (gameStore.mode === Mode.Playing) {
-    if(!gameStore.field[prop.cellId].isPlayable){
+    if(!gameStore.field[props.cellId].isPlayable){
       return CellMode.NotPlayable;
     }
 
-    if(gameStore.focusedCellIndex === prop.cellId){
+    if(gameStore.focusedCellIndex === props.cellId){
       return CellMode.Focused
     }
-    if(gameStore.isMoveAllowed(prop.cellId)){
+    if(gameStore.isMoveAllowed(props.cellId)){
       return CellMode.MoveAllowed
     }
-    return gameStore.field[prop.cellId].isOccupied ? CellMode.Occupied : CellMode.Empty;
+    return gameStore.field[props.cellId].isOccupied ? CellMode.Occupied : CellMode.Empty;
   }
   return CellMode.Empty;
 })
 
 const handleClick = () => {
   if (gameStore.mode === Mode.Building) {
-    gameStore.toggleBuildingCell(prop.cellId)
+    gameStore.toggleBuildingCell(props.cellId)
   }else if(cellMode.value === CellMode.MoveAllowed){
-    gameStore.moveFocusedCell(prop.cellId)
+    gameStore.moveFocusedCell(props.cellId)
   }else if(cellMode.value === CellMode.Occupied){
-    gameStore.focusCell(prop.cellId)
+    gameStore.focusCell(props.cellId)
   }
 }
 
@@ -77,9 +73,7 @@ const handleClick = () => {
   box-shadow: 0 8px 10px rgba(0, 0, 0, 0.15), 0 3px 5px rgba(0, 0, 0, 0.12); /* Darker shadow on hover */
 }
 
-.cell-not-playable {
-
-}
+/* intentionally no base style for not-playable in building mode */
 
 .cell-occupied {
   background-color: #fcc;
@@ -107,6 +101,11 @@ const handleClick = () => {
 
 .cell-empty {
   background-color: #f6f6f6;
+}
+
+/* In playing mode, hide tiles that are not playable while preserving layout */
+.playing.cell-not-playable {
+  visibility: hidden;
 }
 
 </style>
