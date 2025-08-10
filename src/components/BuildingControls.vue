@@ -79,6 +79,27 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
         <div class="stat"><span class="muted">Pegs</span><strong>{{ pegCount }}</strong></div>
       </div>
     </div>
+
+    <div class="section" v-show="!isCollapsed">
+      <div class="row">
+        <div class="label">Auto-solver (DFS)</div>
+        <div class="solver-controls">
+          <button class="btn btn-secondary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('slow')">
+            <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
+            Start Slow
+          </button>
+          <button class="btn btn-primary" :disabled="gameStore.isSolving" @click="gameStore.startAutoSolve('fast')">
+            <span v-if="gameStore.isSolving" class="spinner" aria-hidden="true"></span>
+            Start Fast
+          </button>
+          <button class="btn btn-ghost" :disabled="!gameStore.isSolving" @click="gameStore.stopAutoSolve()">Stop</button>
+        </div>
+      </div>
+      <div class="row" v-if="gameStore.isSolving">
+        <span class="muted">Visited states:</span>
+        <strong>{{ gameStore.visitedStates }}</strong>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -137,6 +158,14 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
 .btn-secondary:hover { background: var(--secondary-hover); }
 .btn-ghost { background: transparent; color: var(--muted); border-color: var(--panel-border); }
 .btn-ghost:hover { color: var(--text); border-color: #7f8ea3; }
+.spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  display: inline-block; margin-right: 6px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .label { color: var(--muted); font-size: 12px; }

@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia';
 import { Mode } from '@/types/Mode';
 import {CellState} from "@/types/CellState";
+import { solveDfs, type SolverMove } from '@/solver/dfsSolver';
 
 
 function assert(condition: boolean, message: string): asserts condition {
@@ -18,6 +19,9 @@ export const useGameStore = defineStore('game', {
         size: 7,
         focusedCellIndex: -1,
         hoveredCellIndex: -1,
+        isSolving: false,
+        visitedStates: 0,
+        _shouldStopSolving: false as boolean,
     }),
     actions: {
 
@@ -51,6 +55,68 @@ export const useGameStore = defineStore('game', {
                 if (this.isMoveAllowedFrom(sourceIndex as number, index)) return true;
             }
             return false;
+        },
+
+        async startAutoSolve(speed: 'fast' | 'slow' = 'fast') {
+            if (this.isSolving) return;
+            if (this.mode !== Mode.Playing) {
+                this.mode = Mode.Playing;
+                this.resetGame();
+            }
+            this.isSolving = true;
+            this.visitedStates = 0;
+            this._shouldStopSolving = false;
+            try {
+                const isFast = speed === 'fast';
+                const SAMPLE_STRIDE = 1000;
+                const result = await solveDfs(this.field, {
+                    size: this.size,
+                    shouldStop: () => this._shouldStopSolving,
+                    delayMs: isFast ? 0 : 1,
+                    onVisit: (v) => { this.visitedStates = v; },
+                    onApplyMove: (move) => {
+                        if (!isFast) {
+                            this.focusedCellIndex = move.from;
+                            this.field[move.from].isOccupied = false;
+                            this.field[move.mid].isOccupied = false;
+                            this.field[move.to].isOccupied = true;
+                        } else {
+                            if (this.visitedStates % SAMPLE_STRIDE === 0) {
+                                this.focusedCellIndex = move.from;
+                            }
+                        }
+                    },
+                    onRevertMove: (move) => {
+                        if (!isFast) {
+                            this.field[move.to].isOccupied = false;
+                            this.field[move.mid].isOccupied = true;
+                            this.field[move.from].isOccupied = true;
+                            this.focusedCellIndex = -1;
+                        } else {
+                            if (this.visitedStates % SAMPLE_STRIDE === 0) {
+                                this.focusedCellIndex = -1;
+                            }
+                        }
+                    },
+                    recordSolutionPath: isFast,
+                });
+                if (isFast && result.solved && result.path) {
+                    for (const move of result.path) {
+                        if (this._shouldStopSolving) break;
+                        this.field[move.from].isOccupied = false;
+                        this.field[move.mid].isOccupied = false;
+                        this.field[move.to].isOccupied = true;
+                    }
+                }
+            } finally {
+                this.isSolving = false;
+                this.focusedCellIndex = -1;
+                this.hoveredCellIndex = -1;
+            }
+        },
+
+        stopAutoSolve() {
+            this._shouldStopSolving = true;
         },
 
         isMoveAllowedFrom(sourceIndex: number, targetIndex: number): boolean {
