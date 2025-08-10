@@ -22,5 +22,15 @@ npm run build
 npm run lint
 ```
 
+### Run unit tests
+```
+npm run test
+```
+
+Watch mode:
+```
+npm run test:watch
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
