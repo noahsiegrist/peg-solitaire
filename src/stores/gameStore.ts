@@ -13,7 +13,7 @@ function assert(condition: boolean, message: string): asserts condition {
 
 export const useGameStore = defineStore('game', {
     state: () => ({
-        mode: Mode.Building,
+        mode: Mode.Playing,
         field: [] as CellState[],
         size: 7,
         focusedCellIndex: -1,
@@ -99,6 +99,31 @@ export const useGameStore = defineStore('game', {
                 cell.isOccupied = cell.isPlayable;
             });
             this.field[Math.floor(this.size / 2) * this.size + Math.floor(this.size / 2)].isOccupied = false;
+        },
+
+        // Building helpers
+        setAllPlayable(isPlayable: boolean) {
+            this.field.forEach((cell) => {
+                cell.isPlayable = isPlayable;
+                if (!isPlayable) cell.isOccupied = false;
+            });
+        },
+
+        applyDefaultLayout() {
+            const size = this.size;
+            const total = size * size;
+            this.field = Array.from({ length: total }, () => ({ isPlayable: true, isOccupied: true }));
+            const mid = Math.floor(size / 2);
+            this.field[mid * size + mid] = { isPlayable: true, isOccupied: false };
+
+            const setOff = (r: number, c: number) => { this.field[r * size + c] = { isPlayable: false, isOccupied: false }; };
+            if (size >= 7) {
+                [[0, 0], [0, size - 2], [size - 2, 0], [size - 2, size - 2]]
+                    .forEach(([r, c]) => [0, 1].forEach(dr => [0, 1].forEach(dc => setOff(r + dr, c + dc))));
+            } else if (size >= 2) {
+                [0, size - 1, size * (size - 1), size * size - 1]
+                    .forEach(i => { this.field[i] = { isPlayable: false, isOccupied: false }; });
+            }
         },
 
     },
