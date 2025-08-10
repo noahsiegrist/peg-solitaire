@@ -19,25 +19,27 @@ enum CellMode {
   Focused = 'cell-focused',
   Empty = 'cell-empty',
   MoveAllowed = 'cell-move-allowed',
+  MoveAllowedHover = 'cell-move-allowed-hover',
 }
 /* eslint-enable no-unused-vars */
 
 const cellMode = computed<CellMode>(() => {
-  if (gameStore.mode === Mode.Building) {
-    return gameStore.field[props.cellId].isPlayable ? CellMode.Playable : CellMode.NotPlayable
-  } else if (gameStore.mode === Mode.Playing) {
-    if(!gameStore.field[props.cellId].isPlayable){
-      return CellMode.NotPlayable;
-    }
+  const id = props.cellId;
+  const { mode, field, focusedCellIndex, hoveredCellIndex, isMoveAllowedFrom } = gameStore;
 
-    if(gameStore.focusedCellIndex === props.cellId){
-      return CellMode.Focused
-    }
-    if(gameStore.isMoveAllowed(props.cellId)){
-      return CellMode.MoveAllowed
-    }
-    return gameStore.field[props.cellId].isOccupied ? CellMode.Occupied : CellMode.Empty;
+  if (mode === Mode.Building) {
+    return field[id].isPlayable ? CellMode.Playable : CellMode.NotPlayable;
   }
+
+  if (mode === Mode.Playing) {
+    const cell = field[id];
+    if (!cell.isPlayable) return CellMode.NotPlayable;
+    if (focusedCellIndex === id) return CellMode.Focused;
+    if (focusedCellIndex !== -1 && isMoveAllowedFrom(focusedCellIndex, id)) return CellMode.MoveAllowed;
+    if (hoveredCellIndex !== -1 && isMoveAllowedFrom(hoveredCellIndex, id)) return CellMode.MoveAllowedHover;
+    return cell.isOccupied ? CellMode.Occupied : CellMode.Empty;
+  }
+
   return CellMode.Empty;
 })
 
@@ -51,10 +53,31 @@ const handleClick = () => {
   }
 }
 
+const handleMouseEnter = () => {
+  if (gameStore.mode !== Mode.Playing) return;
+  const cell = gameStore.field[props.cellId];
+  if (cell?.isPlayable && cell?.isOccupied) {
+    gameStore.hoveredCellIndex = props.cellId;
+  }
+}
+
+const handleMouseLeave = () => {
+  if (gameStore.mode !== Mode.Playing) return;
+  if (gameStore.hoveredCellIndex === props.cellId) {
+    gameStore.hoveredCellIndex = -1;
+  }
+}
+
 </script>
 
 <template>
-  <div class="cell" :class="[cellMode, gameStore.mode]" @click="handleClick">
+  <div
+    class="cell"
+    :class="[cellMode, gameStore.mode]"
+    @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
   </div>
 </template>
 
@@ -99,6 +122,10 @@ const handleClick = () => {
   background-color: #9292ff;
 }
 
+.cell-move-allowed-hover {
+  background-color: #e0e0ff; /* lighter */
+}
+
 .cell-empty {
   background-color: #f6f6f6;
 }
@@ -107,5 +134,8 @@ const handleClick = () => {
 .playing.cell-not-playable {
   visibility: hidden;
 }
+
+/* Hover preview: when hovering an occupied peg in playing mode, show target cells */
+/* Note: highlighting is determined in script via isMoveAllowedFrom; no extra CSS needed here. */
 
 </style>

@@ -17,6 +17,7 @@ export const useGameStore = defineStore('game', {
         field: [] as CellState[],
         size: 7,
         focusedCellIndex: -1,
+        hoveredCellIndex: -1,
     }),
     actions: {
 
@@ -45,19 +46,44 @@ export const useGameStore = defineStore('game', {
             assert(this.mode === Mode.Playing, 'Cannot move in building mode');
             assert(this.field.length > index, 'Index out of bounds');
 
-            if( this.focusedCellIndex === -1
-                || this.focusedCellIndex === index
-                || !this.field[index].isPlayable
-                || this.field[index].isOccupied) {
-                return false;
+            const sources = [this.focusedCellIndex, this.hoveredCellIndex].filter((s) => s !== -1);
+            for (const sourceIndex of sources) {
+                if (this.isMoveAllowedFrom(sourceIndex as number, index)) return true;
+            }
+            return false;
+        },
+
+        isMoveAllowedFrom(sourceIndex: number, targetIndex: number): boolean {
+            assert(this.mode === Mode.Playing, 'Cannot move in building mode');
+            assert(this.field.length > targetIndex, 'Index out of bounds');
+            if (sourceIndex === -1 || sourceIndex === targetIndex) return false;
+
+            const source = this.field[sourceIndex];
+            const target = this.field[targetIndex];
+            if (!source?.isPlayable || !source?.isOccupied || !target?.isPlayable || target?.isOccupied) return false;
+
+            const size = this.size;
+            const sourceRow = Math.floor(sourceIndex / size);
+            const sourceCol = sourceIndex % size;
+            const targetRow = Math.floor(targetIndex / size);
+            const targetCol = targetIndex % size;
+
+            // Horizontal move: same row, two columns apart
+            if (sourceRow === targetRow && Math.abs(targetCol - sourceCol) === 2) {
+                const midCol = (sourceCol + targetCol) / 2;
+                const midIndex = sourceRow * size + midCol;
+                return this.field[midIndex].isOccupied === true;
             }
 
-            const distance = Math.abs(index - this.focusedCellIndex);
-            if(distance !== 2 && distance !== 2 * this.size) {
-                return false;
+            // Vertical move: same column, two rows apart
+            if (sourceCol === targetCol && Math.abs(targetRow - sourceRow) === 2) {
+                const midRow = (sourceRow + targetRow) / 2;
+                const midIndex = midRow * size + sourceCol;
+                return this.field[midIndex].isOccupied === true;
             }
-            const midIndex = index - (index - this.focusedCellIndex) / 2;
-            return this.field[midIndex].isOccupied;
+
+            // Any other move is invalid (prevents wrapping across borders)
+            return false;
         },
 
         moveFocusedCell(index: number) {
