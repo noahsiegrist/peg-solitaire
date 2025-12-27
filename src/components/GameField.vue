@@ -1,9 +1,9 @@
 <template>
   <div
       class="game-field"
-      :style="`grid-template-columns: repeat(${gameStore.size}, 1fr);`">
+      :style="`grid-template-columns: repeat(${gameStore.size.value}, 1fr);`">
     <GameCell
-        v-for="(cell, index) in gameStore.field"
+        v-for="(cell, index) in gameStore.field.value"
         :key="index"
         :cellId="index" />
   </div>

@@ -1,15 +1,14 @@
 import { watch } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
-import { Mode } from '@/types/Mode';
 
 export function setupGameStoreWatchers() {
     const gameStore = useGameStore();
 
     watch(
-        () => gameStore.size,
+        () => gameStore.size.value,
         () => {
             // Initialize field on first load even if starting in Playing mode
-            if (gameStore.mode !== Mode.Building && gameStore.field.length > 0) return;
+            if (!gameStore.isBuildingMode.value && gameStore.field.value.length > 0) return;
             // Delegate to store action for default layout logic
             gameStore.applyDefaultLayout();
         },

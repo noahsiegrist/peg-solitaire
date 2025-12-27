@@ -1,8 +1,7 @@
 <script setup lang="ts">
 
-import {computed, defineProps} from "vue";
+import { computed } from "vue";
 import {useGameStore} from "@/stores/gameStore";
-import {Mode} from "@/types/Mode";
 
 const gameStore = useGameStore();
 
@@ -25,26 +24,25 @@ enum CellMode {
 
 const cellMode = computed<CellMode>(() => {
   const id = props.cellId;
-  const { mode, field, focusedCellIndex, hoveredCellIndex, isMoveAllowedFrom } = gameStore;
+  const { isBuildingMode, field, focusedCellIndex, hoveredCellIndex, isMoveAllowedFrom } = gameStore;
 
-  if (mode === Mode.Building) {
-    return field[id].isPlayable ? CellMode.Playable : CellMode.NotPlayable;
+  if (isBuildingMode.value) {
+    return field.value[id].isPlayable ? CellMode.Playable : CellMode.NotPlayable;
   }
 
-  if (mode === Mode.Playing) {
-    const cell = field[id];
-    if (!cell.isPlayable) return CellMode.NotPlayable;
-    if (focusedCellIndex === id) return CellMode.Focused;
-    if (focusedCellIndex !== -1 && isMoveAllowedFrom(focusedCellIndex, id)) return CellMode.MoveAllowed;
-    if (hoveredCellIndex !== -1 && isMoveAllowedFrom(hoveredCellIndex, id)) return CellMode.MoveAllowedHover;
-    return cell.isOccupied ? CellMode.Occupied : CellMode.Empty;
-  }
-
-  return CellMode.Empty;
+  // Playing mode
+  const cell = field.value[id];
+  if (!cell.isPlayable) return CellMode.NotPlayable;
+  if (focusedCellIndex.value === id) return CellMode.Focused;
+  if (focusedCellIndex.value !== -1 && isMoveAllowedFrom(focusedCellIndex.value, id)) return CellMode.MoveAllowed;
+  if (hoveredCellIndex.value !== -1 && isMoveAllowedFrom(hoveredCellIndex.value, id)) return CellMode.MoveAllowedHover;
+  return cell.isOccupied ? CellMode.Occupied : CellMode.Empty;
 })
 
+const modeClass = computed(() => gameStore.isBuildingMode.value ? 'building' : 'playing');
+
 const handleClick = () => {
-  if (gameStore.mode === Mode.Building) {
+  if (gameStore.isBuildingMode.value) {
     gameStore.toggleBuildingCell(props.cellId)
   }else if(cellMode.value === CellMode.MoveAllowed){
     gameStore.moveFocusedCell(props.cellId)
@@ -54,17 +52,17 @@ const handleClick = () => {
 }
 
 const handleMouseEnter = () => {
-  if (gameStore.mode !== Mode.Playing) return;
-  const cell = gameStore.field[props.cellId];
+  if (gameStore.isBuildingMode.value) return;
+  const cell = gameStore.field.value[props.cellId];
   if (cell?.isPlayable && cell?.isOccupied) {
-    gameStore.hoveredCellIndex = props.cellId;
+    gameStore.hoveredCellIndex.value = props.cellId;
   }
 }
 
 const handleMouseLeave = () => {
-  if (gameStore.mode !== Mode.Playing) return;
-  if (gameStore.hoveredCellIndex === props.cellId) {
-    gameStore.hoveredCellIndex = -1;
+  if (gameStore.isBuildingMode.value) return;
+  if (gameStore.hoveredCellIndex.value === props.cellId) {
+    gameStore.hoveredCellIndex.value = -1;
   }
 }
 
@@ -73,7 +71,7 @@ const handleMouseLeave = () => {
 <template>
   <div
     class="cell"
-    :class="[cellMode, gameStore.mode]"
+    :class="[cellMode, modeClass]"
     @click="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"

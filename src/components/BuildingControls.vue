@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
-import { Mode } from '@/types/Mode';
 import ControlsHeader from '@/components/controls/ControlsHeader.vue';
 import ModeControls from '@/components/controls/ModeControls.vue';
 import BuildingSection from '@/components/controls/BuildingSection.vue';
@@ -14,12 +13,12 @@ const fillAll = () => gameStore.setAllPlayable(true);
 const clearAll = () => gameStore.setAllPlayable(false);
 const applyDefault = () => gameStore.applyDefaultLayout();
 
-const playableCount = computed(() => gameStore.field.filter(c => c.isPlayable).length);
-const pegCount = computed(() => gameStore.field.filter(c => c.isPlayable && c.isOccupied).length);
+const playableCount = computed(() => gameStore.field.value.filter(c => c.isPlayable).length);
+const pegCount = computed(() => gameStore.field.value.filter(c => c.isPlayable && c.isOccupied).length);
 
 const resetAction = () => {
-  if (gameStore.mode === Mode.Building) {
-    gameStore.size = 7;
+  if (gameStore.isBuildingMode.value) {
+    gameStore.size.value = 7;
   }
   gameStore.resetGame();
 };
@@ -47,16 +46,16 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
 
 <template>
   <div class="building-controls" :class="{ collapsed: isCollapsed }">
-    <ControlsHeader :mode="gameStore.mode" :is-collapsed="isCollapsed" @toggle-collapsed="toggleCollapsed" />
+    <ControlsHeader :is-building-mode="gameStore.isBuildingMode.value" :is-collapsed="isCollapsed" @toggle-collapsed="toggleCollapsed" />
 
     <ModeControls v-show="!isCollapsed"
-                  :mode="gameStore.mode"
+                  :is-building-mode="gameStore.isBuildingMode.value"
                   @toggle-mode="gameStore.toggleGameMode"
                   @reset="resetAction" />
 
-    <BuildingSection v-if="gameStore.mode === Mode.Building" v-show="!isCollapsed"
-                     :size="gameStore.size"
-                     @update:size="val => gameStore.size = val"
+    <BuildingSection v-if="gameStore.isBuildingMode.value" v-show="!isCollapsed"
+                     :size="gameStore.size.value"
+                     @update:size="val => gameStore.size.value = val"
                      @fill-all="fillAll"
                      @clear-all="clearAll"
                      @default-layout="applyDefault" />
@@ -66,9 +65,9 @@ const toggleCollapsed = () => { isCollapsed.value = !isCollapsed.value; };
                   :peg-count="pegCount" />
 
     <SolverControls v-show="!isCollapsed"
-                    :is-solving="gameStore.isSolving"
-                    :visited-states="gameStore.visitedStates"
-                    :solution-moves="gameStore.solutionMoves"
+                    :is-solving="gameStore.isSolving.value"
+                    :visited-states="gameStore.visitedStates.value"
+                    :solution-moves="gameStore.solutionMoves.value"
                     @start="(speed) => gameStore.startAutoSolve(speed)"
                     @stop="() => gameStore.stopAutoSolve()"
                     @preview="(i) => gameStore.previewSolutionMove(i)"
